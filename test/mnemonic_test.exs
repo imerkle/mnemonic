@@ -25,9 +25,9 @@ defmodule MnemonicTest do
   end
 
   test "can create and recover mnemonic private keys" do
-    1..10000 |> Enum.reduce([], fn(x, acc) ->
+    1..1000 |> Enum.reduce([], fn(x, acc) ->
       mnemonic = Mnemonic.generate()
-      IO.puts(mnemonic)
+      #IO.puts(mnemonic)
       if Enum.member?(acc, mnemonic) do
         raise "Duplicate mnemonic found #{mnemonic}"
       end
@@ -38,7 +38,14 @@ defmodule MnemonicTest do
       [mnemonic | acc]
     end)
   end
+  test "generate can vary entropy length" do
+      l = 
+      Mnemonic.generate(160)
+      |> String.split()
+      |> length()
 
+      assert l == 15
+  end
   # also test that word count is 2048 bits(?)
 end
 #

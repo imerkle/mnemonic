@@ -1,5 +1,7 @@
 # Mnemonic
 
+[![Build Status](https://travis-ci.com/imerkle/mnemonic.svg?branch=master)](https://travis-ci.com/imerkle/mnemonic)
+
 Library for generating deterministic private keys from random words according to BIP39 standard:
 
 ```elixir
