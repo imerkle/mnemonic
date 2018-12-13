@@ -16,13 +16,13 @@ Library for generating deterministic private keys from random words according to
   # "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
   Mnemonic.mnemonic_to_entropy(mnemonic)
   # "00000000000000000000000000000000"
+  Mnemonic.mnemonic_to_seed(mnemonic, password)
+  # 2e8905819b.....9739fce1f607
+
 ```
 
 TODO:
-- add tests
-- add examples
 - add documentation
-- maybe do mnemonic to seed
 
 ## Installation
 
@@ -32,7 +32,7 @@ by adding `mnemonic` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:mnemonic, "~> 0.2.0"}
+    {:mnemonic, git: "https://github.com/imerkle/mnemonic.git"}
   ]
 end
 ```
