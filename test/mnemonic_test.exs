@@ -7,15 +7,17 @@ defmodule MnemonicTest do
     @vectors |> Enum.each(fn(vector) ->
       target_entropy = List.first(vector)
       target_mnemonic = Enum.at(vector, 1)
-
+      target_seed = Enum.at(vector, 2)
       assert Mnemonic.entropy_to_mnemonic(target_entropy) == target_mnemonic
       assert Mnemonic.mnemonic_to_entropy(target_mnemonic) |> String.downcase == target_entropy
+      assert Mnemonic.mnemonic_to_seed(target_mnemonic, "TREZOR") == target_seed
+      assert Mnemonic.validate_mnemonic(target_mnemonic) == true
     end)
   end
 
-  # test "validate returns correct messages for invalid mnemonic phrases" do
-  #
-  # end
+  test "invalid mnemonic returns false" do
+    assert Mnemonic.validate_mnemonic("subscribe to pewdiepie") == false
+  end
 
   test "entropy_to_mnemonic works" do
     entropy = "00000000000000000000000000000000"
@@ -25,9 +27,8 @@ defmodule MnemonicTest do
   end
 
   test "can create and recover mnemonic private keys" do
-    1..1000 |> Enum.reduce([], fn(x, acc) ->
+    1..10000 |> Enum.reduce([], fn(x, acc) ->
       mnemonic = Mnemonic.generate()
-      #IO.puts(mnemonic)
       if Enum.member?(acc, mnemonic) do
         raise "Duplicate mnemonic found #{mnemonic}"
       end
@@ -48,11 +49,4 @@ defmodule MnemonicTest do
   end
   # also test that word count is 2048 bits(?)
 end
-#
-# [1, 2, 3, 4, 5, 1, 6, 7] |> Enum.reduce([], fn(x, acc) ->
-#   if Enum.member?(acc, x) do
-#     raise "Duplicate value found #{x}"
-#   end
-#
-#   [x | acc]
-# end)
+

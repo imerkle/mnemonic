@@ -19,14 +19,13 @@ defmodule Mnemonic do
   @invalid_mnemonic "Invalid mnemonic"
   @invalid_checksum "Invalid mnemonic checksum"
 
-  def generate(strength \\ 256)
-  def generate(strength) when rem(strength, 32) !== 0, do: raise @invalid_entropy
-  def generate(strength) do
+  def generate(strength \\ 256, words_list \\ @words) do
+    if rem(strength, 32) !== 0, do: raise @invalid_entropy
     entropy = :crypto.strong_rand_bytes(trunc(strength / 8))
-    entropy_to_mnemonic(entropy)
+    entropy_to_mnemonic(entropy, words_list)
   end
 
-  def entropy_to_mnemonic(entropy) do
+  def entropy_to_mnemonic(entropy, words_list \\ @words) do
     target_entropy = case String.valid?(entropy) do
       true -> Base.decode16!(entropy, case: :mixed) # NOTE: gives error sometimes
       _ -> entropy
@@ -46,18 +45,18 @@ defmodule Mnemonic do
         |> Enum.map(fn(x) -> List.first(x) end)
         |> Enum.map(fn(binary) ->
           index = binary_to_byte(binary)
-          Enum.at(@words, index)
+          Enum.at(words_list, index)
         end)
         |> Enum.join(" ")
     end
   end
 
-  def mnemonic_to_entropy(mnemonic) do
+  def mnemonic_to_entropy(mnemonic, words_list \\ @words) do
     words = mnemonic |> String.split(" ")
     if rem(length(words), 3) !== 0, do: raise @invalid_mnemonic
 
     bits = Enum.map(words, fn(word) ->
-        index = Enum.find_index(@words, fn(element) -> element == word end)
+        index = Enum.find_index(words_list, fn(element) -> element == word end)
         if !index, do: raise @invalid_mnemonic
 
         Integer.to_string(index, 2) |> lpad("0", 11)
@@ -87,14 +86,23 @@ defmodule Mnemonic do
     end
   end
 
-  # def mnemonic_to_seed(mnemonic, password) do
-  #
-  # end
+  def mnemonic_to_seed(mnemonic, password) do
+    Pbkdf2.Base.hash_password(mnemonic, salt(password), [digest: :sha512, rounds: 2048,length: 64, format: :hex])
+  end
 
-  # def validate(words) do # NOTE: maybe
-  #
-  # end
 
+  def validate_mnemonic(mnemonic, words_list \\ @words) do
+    try do
+      mnemonic_to_entropy(mnemonic, words_list)
+      true
+    rescue
+      _-> false
+    end
+  end
+
+  def salt(password \\ "") do
+    "mnemonic" <> password
+  end  
   def binary_to_byte(bin), do: Integer.parse(bin, 2) |> elem(0)
 
   def derive_checksum_bits(entropy) do
